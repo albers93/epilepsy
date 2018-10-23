@@ -1,5 +1,6 @@
 #### Epilepsy ####
 # Packages
+library(MASS)
 library(tidyverse)
 library(gridExtra)
 
@@ -289,3 +290,34 @@ grid.arrange(boxplot_response_subject, boxplot_response_seizures_baseline,
              boxplot_response_seizures_treatment, boxplot_response_time_study, 
              boxplot_response_time_baseline, 
              top = "Boxplots grouped by response")
+
+# Log-transformation
+epilepsy$seizures_baseline_log <- log(epilepsy$seizures_baseline)
+summary(object = epilepsy)
+
+#### Count data regression ####
+# Distribution of number of seizures under treatment and maximum likelihood 
+# estimates for size and mu
+ggplot(data = epilepsy) + 
+  geom_density(mapping = aes(x = seizures_treatment, colour = "Kernel density", 
+                             fill = 1)) + 
+  geom_line(mapping = aes(
+    x = seizures_treatment, 
+    y = dnbinom(seizures_treatment, size = 3.77, 
+                mu = mean(epilepsy$seizures_treatment)),
+    colour = "Theoretical density"
+  )) + 
+  scale_colour_viridis_d(direction = -1, name = "Legend") + 
+  guides(fill = FALSE) +
+  xlab(label = "Number of seizures under treatment") + 
+  ylab(label = "Density")
+
+# Regression with negative binomial distribution and log-link
+# count <- glm.nb(
+#   formula = seizures_treatment ~ (treatment + 1) + seizures_baseline_log + 
+#     offset(object = time_study), 
+#   data = epilepsy
+# )
+# summary(object = count)
+
+
