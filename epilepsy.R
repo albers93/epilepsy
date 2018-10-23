@@ -5,14 +5,14 @@ library(gridExtra)
 
 # Data
 epilepsy <- read.csv(file = "epilepsy.csv", sep = ";")
-epilepsy <- rename(
-  .data = epilepsy, 
-  seizures_baseline = number.of.seizures.at.baseline, 
-  seizures_treatment = number.of.seizures.under.treatment, 
-  time_study = time.in.study..days., 
-  dropout = drop.out, 
-  time_baseline = time.to.baseline.number
-)
+epilepsy <- epilepsy %>% 
+  rename(seizures_baseline = number.of.seizures.at.baseline, 
+         seizures_treatment = number.of.seizures.under.treatment, 
+         time_study = time.in.study..days., 
+         dropout = drop.out, 
+         time_baseline = time.to.baseline.number) %>% 
+  mutate(response = seizures_treatment <= seizures_baseline)
+epilepsy$response <- as.integer(epilepsy$response)
 summary(object = epilepsy)
 
 # Boxplots
@@ -64,15 +64,23 @@ boxplot_censor <- ggplot(data = epilepsy) +
   scale_colour_viridis_c() + 
   guides(colour = FALSE, fill = FALSE) + 
   ylab(label = "Censor")
+## Response
+boxplot_response <- ggplot(data = epilepsy) + 
+  geom_boxplot(mapping = aes(y = response, colour = 1, fill = 2)) + 
+  scale_colour_viridis_c() + 
+  guides(colour = FALSE, fill = FALSE) + 
+  ylab(label = "Response")
 ## Execution
 grid.arrange(boxplot_subject, boxplot_treatment, boxplot_seizures_baseline, 
              boxplot_seizures_treatment, boxplot_time_study, boxplot_dropout, 
-             boxplot_time_baseline, boxplot_censor)
+             boxplot_time_baseline, boxplot_censor, boxplot_response, 
+             top = "Boxplots")
 
 # Dummy variables as factors
 epilepsy$treatment <- as.factor(epilepsy$treatment)
 epilepsy$dropout <- as.factor(epilepsy$dropout)
 epilepsy$censor <- as.factor(epilepsy$censor)
+epilepsy$response <- as.factor(epilepsy$response)
 summary(object = epilepsy)
 
 # Boxplots grouped by treatment
@@ -124,7 +132,8 @@ boxplot_treatment_time_baseline <- ggplot(data = epilepsy) +
 ## Execution
 grid.arrange(boxplot_treatment_subject, boxplot_treatment_seizures_baseline, 
              boxplot_treatment_seizures_treatment, boxplot_treatment_time_study, 
-             boxplot_treatment_time_baseline)
+             boxplot_treatment_time_baseline, 
+             top = "Boxplots grouped by treatment")
 
 # Boxplots grouped by drop-out
 ## Subject
@@ -175,7 +184,8 @@ boxplot_dropout_time_baseline <- ggplot(data = epilepsy) +
 ## Execution
 grid.arrange(boxplot_dropout_subject, boxplot_dropout_seizures_baseline, 
              boxplot_dropout_seizures_treatment, boxplot_dropout_time_study, 
-             boxplot_dropout_time_baseline)
+             boxplot_dropout_time_baseline, 
+             top = "Boxplots grouped by drop-out")
 
 # Boxplots grouped by censor
 ## Subject
@@ -226,5 +236,56 @@ boxplot_censor_time_baseline <- ggplot(data = epilepsy) +
 ## Execution
 grid.arrange(boxplot_censor_subject, boxplot_censor_seizures_baseline, 
              boxplot_censor_seizures_treatment, boxplot_censor_time_study, 
-             boxplot_censor_time_baseline)
+             boxplot_censor_time_baseline, top = "Boxplots grouped by censor")
 
+# Boxplots grouped by response
+## Subject
+boxplot_response_subject <- ggplot(data = epilepsy) + 
+  geom_boxplot(mapping = aes(x = response, y = subject, colour = 1, 
+                             fill = response)) + 
+  scale_colour_viridis_d(aesthetics = "fill") + 
+  scale_colour_viridis_c(aesthetics = "colour") +
+  guides(colour = FALSE, fill = FALSE) + 
+  ylab(label = "Subject") + 
+  xlab(label = "Response")
+## Number of seizures at baseline
+boxplot_response_seizures_baseline <- ggplot(data = epilepsy) + 
+  geom_boxplot(mapping = aes(x = response, y = seizures_baseline, colour = 1, 
+                             fill = response)) + 
+  scale_colour_viridis_d(aesthetics = "fill") + 
+  scale_colour_viridis_c(aesthetics = "colour") +
+  guides(colour = FALSE, fill = FALSE) + 
+  ylab(label = "Number of seizures at baseline") + 
+  xlab(label = "Response")
+## Number of seizures under treatment
+boxplot_response_seizures_treatment <- ggplot(data = epilepsy) + 
+  geom_boxplot(mapping = aes(x = response, y = seizures_treatment, colour = 1, 
+                             fill = response)) + 
+  scale_colour_viridis_d(aesthetics = "fill") + 
+  scale_colour_viridis_c(aesthetics = "colour") +
+  guides(colour = FALSE, fill = FALSE) + 
+  ylab(label = "Number of seizures under treatment") + 
+  xlab(label = "Response")
+## Time in study (days)
+boxplot_response_time_study <- ggplot(data = epilepsy) + 
+  geom_boxplot(mapping = aes(x = response, y = time_study, colour = 1, 
+                             fill = response)) + 
+  scale_colour_viridis_d(aesthetics = "fill") + 
+  scale_colour_viridis_c(aesthetics = "colour") +
+  guides(colour = FALSE, fill = FALSE) + 
+  ylab(label = "Time in study (days)") + 
+  xlab(label = "Response")
+## Time to baseline number
+boxplot_response_time_baseline <- ggplot(data = epilepsy) + 
+  geom_boxplot(mapping = aes(x = response, y = time_baseline, colour = 1, 
+                             fill = response)) + 
+  scale_colour_viridis_d(aesthetics = "fill") + 
+  scale_colour_viridis_c(aesthetics = "colour") +
+  guides(colour = FALSE, fill = FALSE) + 
+  ylab(label = "Time to baseline number") + 
+  xlab(label = "Response")
+## Execution
+grid.arrange(boxplot_response_subject, boxplot_response_seizures_baseline, 
+             boxplot_response_seizures_treatment, boxplot_response_time_study, 
+             boxplot_response_time_baseline, 
+             top = "Boxplots grouped by response")
