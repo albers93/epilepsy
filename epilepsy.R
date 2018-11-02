@@ -3,6 +3,7 @@
 library(MASS)
 library(tidyverse)
 library(gridExtra)
+library(epitools)
 
 # Data
 epilepsy <- read.csv(file = "epilepsy.csv", sep = ";")
@@ -293,6 +294,7 @@ grid.arrange(boxplot_response_subject, boxplot_response_seizures_baseline,
 
 # Log-transformation
 epilepsy$seizures_baseline_log <- log(epilepsy$seizures_baseline)
+epilepsy$time_study_log <- log(epilepsy$time_study)
 summary(object = epilepsy)
 
 #### Count data regression ####
@@ -313,11 +315,132 @@ ggplot(data = epilepsy) +
   ylab(label = "Density")
 
 # Regression with negative binomial distribution and log-link
-# count <- glm.nb(
-#   formula = seizures_treatment ~ (treatment + 1) + seizures_baseline_log + 
-#     offset(object = time_study), 
-#   data = epilepsy
-# )
-# summary(object = count)
+count <- glm.nb(
+  formula = seizures_treatment ~ treatment + seizures_baseline + 
+    offset(object = time_study_log),
+  data = epilepsy 
+)
+summary(object = count)
+## All parameters are significant at 0.05 signifcance level.
 
+## Log
+count_log <- glm.nb(
+  formula = seizures_treatment ~ treatment + seizures_baseline_log +
+    offset(object = time_study_log),
+  data = epilepsy
+)
+summary(object = count_log)
+### All parameters are significant at 0.05 signifcance level.
+### Treatment has a negative effect on the number of seizures
 
+## AIC
+AIC(count, count_log)
+AIC(count_log) < AIC(count)
+### count_log is the better model
+
+## Confidence Interval
+confint(count_log)
+### Everything significantly different from zero.
+
+ggplot(data = epilepsy) + 
+  geom_point(mapping = aes(x = seizures_baseline_log, 
+                           y = seizures_treatment, colour = 1)) + 
+  geom_line(mapping = aes(
+    x = seizures_baseline_log[order(seizures_baseline_log)], 
+    y = as.vector(count_log$fitted.values[order(count_log$fitted.values)]), 
+    colour = 2)
+  ) + 
+  scale_colour_viridis_c(guide = FALSE) + 
+  xlab(label = "Logarithmic number of seizures at baseline") + 
+  ylab(label = "Number of seizures under treatment")
+
+#### Binary Regression ####
+# Chi-Quadrat Tests
+table(epilepsy$response, epilepsy$treatment, dnn = c("Response", "Treatment"))
+chisq.test(x = epilepsy$response, y = epilepsy$treatment)
+## P-value > 0.05. -> No significant correlation.
+
+## Odds-ratio and confidence interval
+oddsratio(x = epilepsy$response, y = epilepsy$treatment)
+
+# Logistische Regression
+logit <- glm(formula = response ~ treatment + seizures_baseline, 
+                 family = binomial, data = epilepsy)
+summary(object = logit)
+## Only the Intercept is significant.
+plot(logit)
+
+## Number of seizures at baseline is logarithmized
+logit_log <- glm(formula = response ~ treatment + seizures_baseline_log, 
+                 family = binomial, data = epilepsy)
+summary(object = logit_log)
+### Only the Intercept is significant.
+
+## AIC
+AIC(logit, logit_log)
+AIC(logit_log) < AIC(logit)
+### logit_log is the better model
+
+ggplot(data = epilepsy) + 
+  geom_point(mapping = aes(x = seizures_baseline_log, 
+                           y = as.numeric(response) - 1, colour = 1)) + 
+  geom_line(mapping = aes(
+    x = seizures_baseline_log[order(seizures_baseline_log)], 
+    y = as.vector(logit_log$fitted.values[order(logit_log$fitted.values)]), 
+    colour = 2)
+  ) + 
+  scale_colour_viridis_c(guide = FALSE) + 
+  xlab(label = "Logarithmic number of seizures at baseline") + 
+  ylab(label = "Response")
+
+# ggplot(data = epilepsy) + 
+#   geom_point(mapping = aes(x = as.numeric(treatment) - 1, 
+#                            y = as.numeric(response) - 1, colour = 1)) + 
+#   geom_line(mapping = aes(
+#     x = (as.numeric(epilepsy$treatment) - 1)[order(
+#       (as.numeric(epilepsy$treatment) - 1)
+#     )], 
+#     y = as.vector(logit_log$fitted.values[order(logit_log$fitted.values)]), 
+#     colour = 2)
+#   ) + 
+#   scale_colour_viridis_c(guide = FALSE) + 
+#   xlab(label = "Treatment") + 
+#   ylab(label = "Response")
+
+# ## Odds-ratio
+# exp(logit_log$coefficients[2])
+# ### If treatment = 1, the probability for response = 1 increases.
+# exp(logit_log$coefficients[3])
+# ### If number of seizures at baseline is high, 
+# ### the probability for response = 1 is high.
+
+## Confidence interval
+confint(object = logit_log)
+### Only the intercept significantly different from zero
+
+## Plot of the Fitted Values
+ggplot(data = epilepsy) + 
+  geom_point(mapping = aes(x = seizures_baseline_log, 
+                           y = as.numeric(response) - 1, colour = 1)) + 
+  geom_line(mapping = aes(
+    x = seizures_baseline_log[order(seizures_baseline_log)], 
+    y = as.vector(logit_log$fitted.values[order(logit_log$fitted.values)]), 
+    colour = 2)
+  ) + 
+  scale_colour_viridis_c(guide = FALSE) + 
+  xlab(label = "Logarithmic number of seizures at baseline") + 
+  ylab(label = "Response")
+
+# ggplot(data = epilepsy) + 
+#   geom_point(mapping = aes(x = as.numeric(treatment) - 1, 
+#                            y = as.numeric(response) - 1, colour = 1)) + 
+#   geom_line(mapping = aes(
+#     x = (as.numeric(epilepsy$treatment) - 1)[order(
+#       (as.numeric(epilepsy$treatment) - 1)
+#     )], 
+#     y = as.vector(logit_log$fitted.values[order(logit_log$fitted.values)]), 
+#     colour = 2)
+#   ) + 
+#   scale_colour_viridis_c(guide = FALSE) + 
+#   xlab(label = "Treatment") + 
+#   ylab(label = "Response")
