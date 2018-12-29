@@ -4,357 +4,51 @@ library(MASS)
 library(tidyverse)
 library(gridExtra)
 library(epitools)
+library(GGally)
 
 # Data
 epilepsy <- read.csv(file = "epilepsy.csv", sep = ";")
 epilepsy <- epilepsy %>% 
-  rename(seizures_baseline = number.of.seizures.at.baseline, 
-         seizures_treatment = number.of.seizures.under.treatment, 
-         time_study = time.in.study..days., 
-         dropout = drop.out, 
-         time_baseline = time.to.baseline.number) %>% 
-  mutate(response = seizures_treatment <= seizures_baseline)
-epilepsy$response <- as.integer(epilepsy$response)
-summary(object = epilepsy)
-
-# Boxplots
-## Subject
-boxplot_subject <- ggplot(data = epilepsy) + 
-  geom_boxplot(mapping = aes(y = subject, colour = 1, fill = 2)) + 
-  scale_colour_viridis_c() + 
-  guides(colour = FALSE, fill = FALSE) + 
-  ylab(label = "Subject")
-## Treatment
-boxplot_treatment <- ggplot(data = epilepsy) + 
-  geom_boxplot(mapping = aes(y = treatment, colour = 1, fill = 2)) + 
-  scale_colour_viridis_c() + 
-  guides(colour = FALSE, fill = FALSE) + 
-  ylab(label = "Treatment")
-## Number of seizures at baseline
-boxplot_seizures_baseline <- ggplot(data = epilepsy) + 
-  geom_boxplot(mapping = aes(y = seizures_baseline, colour = 1, fill = 2)) + 
-  scale_colour_viridis_c() + 
-  guides(colour = FALSE, fill = FALSE) + 
-  ylab(label = "Number of seizures at baseline")
-## Number of seizures under treatment
-boxplot_seizures_treatment <- ggplot(data = epilepsy) + 
-  geom_boxplot(mapping = aes(y = seizures_treatment, colour = 1, fill = 2)) + 
-  scale_colour_viridis_c() + 
-  guides(colour = FALSE, fill = FALSE) + 
-  ylab(label = "Number of seizures under treatment")
-## Time in study (days)
-boxplot_time_study <- ggplot(data = epilepsy) + 
-  geom_boxplot(mapping = aes(y = time_study, colour = 1, fill = 2)) + 
-  scale_colour_viridis_c() + 
-  guides(colour = FALSE, fill = FALSE) + 
-  ylab(label = "Time in study (days)")
-## Drop-out
-boxplot_dropout <- ggplot(data = epilepsy) + 
-  geom_boxplot(mapping = aes(y = dropout, colour = 1, fill = 2)) + 
-  scale_colour_viridis_c() + 
-  guides(colour = FALSE, fill = FALSE) + 
-  ylab(label = "Drop-out")
-## Time to baseline number
-boxplot_time_baseline <- ggplot(data = epilepsy) + 
-  geom_boxplot(mapping = aes(y = time_baseline, colour = 1, fill = 2)) + 
-  scale_colour_viridis_c() + 
-  guides(colour = FALSE, fill = FALSE) + 
-  ylab(label = "Time to baseline number")
-## Censor
-boxplot_censor <- ggplot(data = epilepsy) + 
-  geom_boxplot(mapping = aes(y = censor, colour = 1, fill = 2)) + 
-  scale_colour_viridis_c() + 
-  guides(colour = FALSE, fill = FALSE) + 
-  ylab(label = "Censor")
-## Response
-boxplot_response <- ggplot(data = epilepsy) + 
-  geom_boxplot(mapping = aes(y = response, colour = 1, fill = 2)) + 
-  scale_colour_viridis_c() + 
-  guides(colour = FALSE, fill = FALSE) + 
-  ylab(label = "Response")
-## Execution
-grid.arrange(boxplot_subject, boxplot_treatment, boxplot_seizures_baseline, 
-             boxplot_seizures_treatment, boxplot_time_study, boxplot_dropout, 
-             boxplot_time_baseline, boxplot_censor, boxplot_response, 
-             top = "Boxplots")
-
-# Dummy variables as factors
-epilepsy$treatment <- as.factor(epilepsy$treatment)
-epilepsy$dropout <- as.factor(epilepsy$dropout)
-epilepsy$censor <- as.factor(epilepsy$censor)
-epilepsy$response <- as.factor(epilepsy$response)
-summary(object = epilepsy)
-
-# Boxplots grouped by treatment
-## Subject
-boxplot_treatment_subject <- ggplot(data = epilepsy) + 
-  geom_boxplot(mapping = aes(x = treatment, y = subject, colour = 1, 
-                             fill = treatment)) + 
-  scale_colour_viridis_d(aesthetics = "fill") + 
-  scale_colour_viridis_c(aesthetics = "colour") +
-  guides(colour = FALSE, fill = FALSE) + 
-  ylab(label = "Subject") + 
-  xlab(label = "Treatment")
-## Number of seizures at baseline
-boxplot_treatment_seizures_baseline <- ggplot(data = epilepsy) + 
-  geom_boxplot(mapping = aes(x = treatment, y = seizures_baseline, colour = 1, 
-                             fill = treatment)) + 
-  scale_colour_viridis_d(aesthetics = "fill") + 
-  scale_colour_viridis_c(aesthetics = "colour") +
-  guides(colour = FALSE, fill = FALSE) + 
-  ylab(label = "Number of seizures at baseline") + 
-  xlab(label = "Treatment")
-## Number of seizures under treatment
-boxplot_treatment_seizures_treatment <- ggplot(data = epilepsy) + 
-  geom_boxplot(mapping = aes(x = treatment, y = seizures_treatment, colour = 1, 
-                             fill = treatment)) + 
-  scale_colour_viridis_d(aesthetics = "fill") + 
-  scale_colour_viridis_c(aesthetics = "colour") +
-  guides(colour = FALSE, fill = FALSE) + 
-  ylab(label = "Number of seizures under treatment") + 
-  xlab(label = "Treatment")
-## Time in study (days)
-boxplot_treatment_time_study <- ggplot(data = epilepsy) + 
-  geom_boxplot(mapping = aes(x = treatment, y = time_study, colour = 1, 
-                             fill = treatment)) + 
-  scale_colour_viridis_d(aesthetics = "fill") + 
-  scale_colour_viridis_c(aesthetics = "colour") +
-  guides(colour = FALSE, fill = FALSE) + 
-  ylab(label = "Time in study (days)") + 
-  xlab(label = "Treatment")
-## Time to baseline number
-boxplot_treatment_time_baseline <- ggplot(data = epilepsy) + 
-  geom_boxplot(mapping = aes(x = treatment, y = time_baseline, colour = 1, 
-                             fill = treatment)) + 
-  scale_colour_viridis_d(aesthetics = "fill") + 
-  scale_colour_viridis_c(aesthetics = "colour") +
-  guides(colour = FALSE, fill = FALSE) + 
-  ylab(label = "Time to baseline number") + 
-  xlab(label = "Treatment")
-## Execution
-grid.arrange(boxplot_treatment_subject, boxplot_treatment_seizures_baseline, 
-             boxplot_treatment_seizures_treatment, boxplot_treatment_time_study, 
-             boxplot_treatment_time_baseline, 
-             top = "Boxplots grouped by treatment")
-
-# Boxplots grouped by drop-out
-## Subject
-boxplot_dropout_subject <- ggplot(data = epilepsy) + 
-  geom_boxplot(mapping = aes(x = dropout, y = subject, colour = 1, 
-                             fill = dropout)) + 
-  scale_colour_viridis_d(aesthetics = "fill") + 
-  scale_colour_viridis_c(aesthetics = "colour") +
-  guides(colour = FALSE, fill = FALSE) + 
-  ylab(label = "Subject") + 
-  xlab(label = "Drop-out")
-## Number of seizures at baseline
-boxplot_dropout_seizures_baseline <- ggplot(data = epilepsy) + 
-  geom_boxplot(mapping = aes(x = dropout, y = seizures_baseline, colour = 1, 
-                             fill = dropout)) + 
-  scale_colour_viridis_d(aesthetics = "fill") + 
-  scale_colour_viridis_c(aesthetics = "colour") +
-  guides(colour = FALSE, fill = FALSE) + 
-  ylab(label = "Number of seizures at baseline") + 
-  xlab(label = "Drop-out")
-## Number of seizures under treatment
-boxplot_dropout_seizures_treatment <- ggplot(data = epilepsy) + 
-  geom_boxplot(mapping = aes(x = dropout, y = seizures_treatment, colour = 1, 
-                             fill = dropout)) + 
-  scale_colour_viridis_d(aesthetics = "fill") + 
-  scale_colour_viridis_c(aesthetics = "colour") +
-  guides(colour = FALSE, fill = FALSE) + 
-  ylab(label = "Number of seizures under treatment") + 
-  xlab(label = "Drop-out")
-## Time in study (days)
-boxplot_dropout_time_study <- ggplot(data = epilepsy) + 
-  geom_boxplot(mapping = aes(x = dropout, y = time_study, colour = 1, 
-                             fill = dropout)) + 
-  scale_colour_viridis_d(aesthetics = "fill") + 
-  scale_colour_viridis_c(aesthetics = "colour") +
-  guides(colour = FALSE, fill = FALSE) + 
-  ylab(label = "Time in study (days)") + 
-  xlab(label = "Drop-out")
-## Time to baseline number
-boxplot_dropout_time_baseline <- ggplot(data = epilepsy) + 
-  geom_boxplot(mapping = aes(x = dropout, y = time_baseline, colour = 1, 
-                             fill = dropout)) + 
-  scale_colour_viridis_d(aesthetics = "fill") + 
-  scale_colour_viridis_c(aesthetics = "colour") +
-  guides(colour = FALSE, fill = FALSE) + 
-  ylab(label = "Time to baseline number") + 
-  xlab(label = "Drop-out")
-## Execution
-grid.arrange(boxplot_dropout_subject, boxplot_dropout_seizures_baseline, 
-             boxplot_dropout_seizures_treatment, boxplot_dropout_time_study, 
-             boxplot_dropout_time_baseline, 
-             top = "Boxplots grouped by drop-out")
-
-# Boxplots grouped by censor
-## Subject
-boxplot_censor_subject <- ggplot(data = epilepsy) + 
-  geom_boxplot(mapping = aes(x = censor, y = subject, colour = 1, 
-                             fill = censor)) + 
-  scale_colour_viridis_d(aesthetics = "fill") + 
-  scale_colour_viridis_c(aesthetics = "colour") +
-  guides(colour = FALSE, fill = FALSE) + 
-  ylab(label = "Subject") + 
-  xlab(label = "Censor")
-## Number of seizures at baseline
-boxplot_censor_seizures_baseline <- ggplot(data = epilepsy) + 
-  geom_boxplot(mapping = aes(x = censor, y = seizures_baseline, colour = 1, 
-                             fill = censor)) + 
-  scale_colour_viridis_d(aesthetics = "fill") + 
-  scale_colour_viridis_c(aesthetics = "colour") +
-  guides(colour = FALSE, fill = FALSE) + 
-  ylab(label = "Number of seizures at baseline") + 
-  xlab(label = "Censor")
-## Number of seizures under treatment
-boxplot_censor_seizures_treatment <- ggplot(data = epilepsy) + 
-  geom_boxplot(mapping = aes(x = censor, y = seizures_treatment, colour = 1, 
-                             fill = censor)) + 
-  scale_colour_viridis_d(aesthetics = "fill") + 
-  scale_colour_viridis_c(aesthetics = "colour") +
-  guides(colour = FALSE, fill = FALSE) + 
-  ylab(label = "Number of seizures under treatment") + 
-  xlab(label = "Censor")
-## Time in study (days)
-boxplot_censor_time_study <- ggplot(data = epilepsy) + 
-  geom_boxplot(mapping = aes(x = censor, y = time_study, colour = 1, 
-                             fill = censor)) + 
-  scale_colour_viridis_d(aesthetics = "fill") + 
-  scale_colour_viridis_c(aesthetics = "colour") +
-  guides(colour = FALSE, fill = FALSE) + 
-  ylab(label = "Time in study (days)") + 
-  xlab(label = "Censor")
-## Time to baseline number
-boxplot_censor_time_baseline <- ggplot(data = epilepsy) + 
-  geom_boxplot(mapping = aes(x = censor, y = time_baseline, colour = 1, 
-                             fill = censor)) + 
-  scale_colour_viridis_d(aesthetics = "fill") + 
-  scale_colour_viridis_c(aesthetics = "colour") +
-  guides(colour = FALSE, fill = FALSE) + 
-  ylab(label = "Time to baseline number") + 
-  xlab(label = "Censor")
-## Execution
-grid.arrange(boxplot_censor_subject, boxplot_censor_seizures_baseline, 
-             boxplot_censor_seizures_treatment, boxplot_censor_time_study, 
-             boxplot_censor_time_baseline, top = "Boxplots grouped by censor")
-
-# Boxplots grouped by response
-## Subject
-boxplot_response_subject <- ggplot(data = epilepsy) + 
-  geom_boxplot(mapping = aes(x = response, y = subject, colour = 1, 
-                             fill = response)) + 
-  scale_colour_viridis_d(aesthetics = "fill") + 
-  scale_colour_viridis_c(aesthetics = "colour") +
-  guides(colour = FALSE, fill = FALSE) + 
-  ylab(label = "Subject") + 
-  xlab(label = "Response")
-## Number of seizures at baseline
-boxplot_response_seizures_baseline <- ggplot(data = epilepsy) + 
-  geom_boxplot(mapping = aes(x = response, y = seizures_baseline, colour = 1, 
-                             fill = response)) + 
-  scale_colour_viridis_d(aesthetics = "fill") + 
-  scale_colour_viridis_c(aesthetics = "colour") +
-  guides(colour = FALSE, fill = FALSE) + 
-  ylab(label = "Number of seizures at baseline") + 
-  xlab(label = "Response")
-## Number of seizures under treatment
-boxplot_response_seizures_treatment <- ggplot(data = epilepsy) + 
-  geom_boxplot(mapping = aes(x = response, y = seizures_treatment, colour = 1, 
-                             fill = response)) + 
-  scale_colour_viridis_d(aesthetics = "fill") + 
-  scale_colour_viridis_c(aesthetics = "colour") +
-  guides(colour = FALSE, fill = FALSE) + 
-  ylab(label = "Number of seizures under treatment") + 
-  xlab(label = "Response")
-## Time in study (days)
-boxplot_response_time_study <- ggplot(data = epilepsy) + 
-  geom_boxplot(mapping = aes(x = response, y = time_study, colour = 1, 
-                             fill = response)) + 
-  scale_colour_viridis_d(aesthetics = "fill") + 
-  scale_colour_viridis_c(aesthetics = "colour") +
-  guides(colour = FALSE, fill = FALSE) + 
-  ylab(label = "Time in study (days)") + 
-  xlab(label = "Response")
-## Time to baseline number
-boxplot_response_time_baseline <- ggplot(data = epilepsy) + 
-  geom_boxplot(mapping = aes(x = response, y = time_baseline, colour = 1, 
-                             fill = response)) + 
-  scale_colour_viridis_d(aesthetics = "fill") + 
-  scale_colour_viridis_c(aesthetics = "colour") +
-  guides(colour = FALSE, fill = FALSE) + 
-  ylab(label = "Time to baseline number") + 
-  xlab(label = "Response")
-## Execution
-grid.arrange(boxplot_response_subject, boxplot_response_seizures_baseline, 
-             boxplot_response_seizures_treatment, boxplot_response_time_study, 
-             boxplot_response_time_baseline, 
-             top = "Boxplots grouped by response")
-
-# Log-transformation
-epilepsy$seizures_baseline_log <- log(epilepsy$seizures_baseline)
-epilepsy$time_study_log <- log(epilepsy$time_study)
-summary(object = epilepsy)
-
-#### Count data regression ####
-# Distribution of number of seizures under treatment and maximum likelihood 
-# estimates for size and mu
-ggplot(data = epilepsy) + 
-  geom_density(mapping = aes(x = seizures_treatment, colour = "Kernel density", 
-                             fill = 1)) + 
-  geom_line(mapping = aes(
-    x = seizures_treatment, 
-    y = dnbinom(seizures_treatment, size = 3.77, 
-                mu = mean(epilepsy$seizures_treatment)),
-    colour = "Theoretical density"
-  )) + 
-  scale_colour_viridis_d(direction = -1, name = "Legend") + 
-  guides(fill = FALSE) +
-  xlab(label = "Number of seizures under treatment") + 
-  ylab(label = "Density")
-
-# Regression with negative binomial distribution and log-link
-count <- glm.nb(
-  formula = seizures_treatment ~ treatment + seizures_baseline + 
-    offset(object = time_study_log),
-  data = epilepsy 
+  rename(
+    seizures_baseline = number.of.seizures.at.baseline, 
+    seizures_treatment = number.of.seizures.under.treatment, 
+    time_study = time.in.study..days., 
+    dropout = drop.out, 
+    time_baseline = time.to.baseline.number
+) %>% 
+  mutate(
+    treatment = factor(treatment, labels = c("placebo", "new")), 
+    dropout = as.factor(dropout), 
+    censor = as.factor(censor), 
+    response = as.factor(as.integer(
+      seizures_treatment <= seizures_baseline & dropout == 0)
+    ),
+    seizures_baseline_log = log(seizures_baseline), 
+    time_study_log = log(time_study)
 )
-summary(object = count)
-## All parameters are significant at 0.05 signifcance level.
-
-## Log
-count_log <- glm.nb(
-  formula = seizures_treatment ~ treatment + seizures_baseline_log +
-    offset(object = time_study_log),
-  data = epilepsy
-)
-summary(object = count_log)
-### All parameters are significant at 0.05 signifcance level.
-### Treatment has a negative effect on the number of seizures
-
-## AIC
-AIC(count, count_log)
-AIC(count_log) < AIC(count)
-### count_log is the better model
-
-## Confidence Interval
-confint(count_log)
-### Everything significantly different from zero.
-
-ggplot(data = epilepsy) + 
-  geom_point(mapping = aes(x = seizures_baseline_log, 
-                           y = seizures_treatment, colour = 1)) + 
-  geom_line(mapping = aes(
-    x = seizures_baseline_log[order(seizures_baseline_log)], 
-    y = as.vector(count_log$fitted.values[order(count_log$fitted.values)]), 
-    colour = 2)
-  ) + 
-  scale_colour_viridis_c(guide = FALSE) + 
-  xlab(label = "Logarithmic number of seizures at baseline") + 
-  ylab(label = "Number of seizures under treatment")
+summary(object = epilepsy)
+ggpairs(data = epilepsy, mapping = aes(colour = 1),
+        upper = list(continuous = wrap(funcVal = "points"), 
+                     combo = wrap(funcVal = "box"), 
+                     discrete = wrap(funcVal = "facetbar")), 
+        lower = list(continuous = wrap(funcVal = "points"), 
+                     combo = wrap(funcVal = "box"), 
+                     discrete = wrap(funcVal = "facetbar")),
+        diag = list(continuous = wrap(funcVal = "densityDiag"), 
+                    discrete = wrap(funcVal = "barDiag")))
 
 #### Binary Regression ####
+ggpairs(data = epilepsy, mapping = aes(colour = 1), 
+        columns = c("response", "treatment", "seizures_baseline"),
+        upper = list(continuous = wrap(funcVal = "points"), 
+                     combo = wrap(funcVal = "box"), 
+                     discrete = wrap(funcVal = "facetbar")), 
+        lower = list(continuous = wrap(funcVal = "points"), 
+                     combo = wrap(funcVal = "box"), 
+                     discrete = wrap(funcVal = "facetbar")),
+        diag = list(continuous = wrap(funcVal = "densityDiag"), 
+                    discrete = wrap(funcVal = "barDiag")))
+
 # Chi-Quadrat Tests
 table(epilepsy$response, epilepsy$treatment, dnn = c("Response", "Treatment"))
 chisq.test(x = epilepsy$response, y = epilepsy$treatment)
@@ -365,10 +59,9 @@ oddsratio(x = epilepsy$response, y = epilepsy$treatment)
 
 # Logistische Regression
 logit <- glm(formula = response ~ treatment + seizures_baseline, 
-                 family = binomial, data = epilepsy)
+             family = binomial, data = epilepsy)
 summary(object = logit)
 ## Only the Intercept is significant.
-plot(logit)
 
 ## Number of seizures at baseline is logarithmized
 logit_log <- glm(formula = response ~ treatment + seizures_baseline_log, 
@@ -384,35 +77,31 @@ AIC(logit_log) < AIC(logit)
 ggplot(data = epilepsy) + 
   geom_point(mapping = aes(x = seizures_baseline_log, 
                            y = as.numeric(response) - 1, colour = 1)) + 
-  geom_line(mapping = aes(
-    x = seizures_baseline_log[order(seizures_baseline_log)], 
-    y = as.vector(logit_log$fitted.values[order(logit_log$fitted.values)]), 
-    colour = 2)
+  geom_smooth(
+    formula = epilepsy$response ~ epilepsy$treatment + 
+      epilepsy$seizures_baseline, 
+    mapping = aes(
+      x = seizures_baseline_log[order(seizures_baseline_log)], 
+      y = as.vector(logit_log$fitted.values[order(logit_log$fitted.values)]), 
+      colour = 2)
   ) + 
   scale_colour_viridis_c(guide = FALSE) + 
   xlab(label = "Logarithmic number of seizures at baseline") + 
   ylab(label = "Response")
 
-# ggplot(data = epilepsy) + 
-#   geom_point(mapping = aes(x = as.numeric(treatment) - 1, 
-#                            y = as.numeric(response) - 1, colour = 1)) + 
-#   geom_line(mapping = aes(
-#     x = (as.numeric(epilepsy$treatment) - 1)[order(
-#       (as.numeric(epilepsy$treatment) - 1)
-#     )], 
-#     y = as.vector(logit_log$fitted.values[order(logit_log$fitted.values)]), 
-#     colour = 2)
-#   ) + 
-#   scale_colour_viridis_c(guide = FALSE) + 
-#   xlab(label = "Treatment") + 
-#   ylab(label = "Response")
-
-# ## Odds-ratio
-# exp(logit_log$coefficients[2])
-# ### If treatment = 1, the probability for response = 1 increases.
-# exp(logit_log$coefficients[3])
-# ### If number of seizures at baseline is high, 
-# ### the probability for response = 1 is high.
+ggplot(data = epilepsy) +
+  geom_point(mapping = aes(x = as.numeric(treatment) - 1,
+                           y = as.numeric(response) - 1, colour = 1)) +
+  geom_line(mapping = aes(
+    x = (as.numeric(epilepsy$treatment) - 1)[order(
+      (as.numeric(epilepsy$treatment) - 1)
+    )],
+    y = as.vector(logit_log$fitted.values[order(logit_log$fitted.values)]),
+    colour = 2)
+  ) +
+  scale_colour_viridis_c(guide = FALSE) +
+  xlab(label = "Treatment") +
+  ylab(label = "Response")
 
 ## Confidence interval
 confint(object = logit_log)
@@ -444,3 +133,136 @@ ggplot(data = epilepsy) +
 #   scale_colour_viridis_c(guide = FALSE) + 
 #   xlab(label = "Treatment") + 
 #   ylab(label = "Response")
+
+ggplot(data = epilepsy) + 
+  geom_density(mapping = aes(x = seizures_baseline, colour = "Kernel density", 
+                             fill = 1)) + 
+  geom_line(mapping = aes(
+    x = seizures_treatment,
+    y = dnbinom(seizures_treatment, size = 3.77,
+                mu = mean(epilepsy$seizures_treatment)),
+    colour = "Theoretical density"
+  )) +
+  scale_colour_viridis_d(direction = -1, name = "Legend") + 
+  guides(fill = FALSE) +
+  xlab(label = "Number of seizures under treatment") + 
+  ylab(label = "Density")
+
+shapiro.test(residuals.glm(logit))
+shapiro.test(residuals(logit))
+shapiro.test(logit$residuals)
+ggplot(data = epilepsy) + 
+  geom_point(mapping = aes(x = 1:length(subject), y = logit$residuals, 
+                           colour = 0)) + 
+  geom_hline(mapping = aes(yintercept = 0, colour = 1)) +
+  scale_colour_viridis_c(guide = FALSE) + 
+  xlab(label = "Index") + 
+  ylab(label = "Residuen")
+
+#### Count data regression ####
+# Distribution of number of seizures under treatment and maximum likelihood 
+# estimates for size and mu
+summary(object = select(.data = epilepsy, seizures_treatment, treatment, 
+                        seizures_baseline, time_study, seizures_baseline_log, 
+                        time_study_log))
+ggpairs(data = select(.data = epilepsy, seizures_treatment, treatment, 
+                      seizures_baseline, time_study, seizures_baseline_log, 
+                      time_study_log), mapping = aes(colour = 1),
+        upper = list(continuous = wrap(funcVal = "points"), 
+                     combo = wrap(funcVal = "box"), 
+                     discrete = wrap(funcVal = "facetbar")), 
+        lower = list(continuous = wrap(funcVal = "points"), 
+                     combo = wrap(funcVal = "box"), 
+                     discrete = wrap(funcVal = "facetbar")),
+        diag = list(continuous = wrap(funcVal = "densityDiag"), 
+                    discrete = wrap(funcVal = "barDiag")))
+ggplot(data = epilepsy) + 
+  geom_density(mapping = aes(x = seizures_treatment, 
+                             colour = "Kerndichteschätzer", fill = 1)) + 
+  geom_line(mapping = aes(
+    x = seizures_treatment, 
+    y = dnbinom(seizures_treatment, size = 3.77, 
+                mu = mean(epilepsy$seizures_treatment)),
+    colour = "Negativ-binomial-Verteilung"
+  )) + 
+  scale_colour_viridis_d(direction = -1) + 
+  guides(fill = FALSE, colour = FALSE) +
+  xlab(label = "Anzahl der Anfälle während der Behandlung") + 
+  ylab(label = "Dichte")
+
+# Regression with negative binomial distribution and log-link
+count <- glm.nb(
+  formula = seizures_treatment ~ treatment + seizures_baseline +
+    offset(object = time_study_log),
+  data = epilepsy 
+)
+summary(object = count)
+## All parameters are significant at 0.05 signifcance level.
+
+## Log
+count_log <- glm.nb(
+  formula = seizures_treatment ~ treatment + seizures_baseline_log +
+    offset(object = time_study_log),
+  data = epilepsy
+)
+summary(object = count_log)
+### All parameters are significant at 0.05 signifcance level.
+### Treatment has a negative effect on the number of seizures
+
+## AIC
+AIC(count, count_log)
+AIC(count_log) < AIC(count)
+### count_log is the better model
+
+anova(count, count_log)
+
+## Confidence Interval
+confint(count_log)
+### Everything significantly different from zero.
+
+ggplot(data = epilepsy) + 
+  geom_point(mapping = aes(x = seizures_baseline_log, 
+                           y = seizures_treatment, colour = 1)) + 
+  geom_line(mapping = aes(
+    x = seizures_baseline_log[order(seizures_baseline_log)], 
+    y = as.vector(count_log$fitted.values[order(count_log$fitted.values)]), 
+    colour = 2)
+  ) + 
+  scale_colour_viridis_c(guide = FALSE) + 
+  xlab(label = "Logarithmic number of seizures at baseline") + 
+  ylab(label = "Number of seizures under treatment")
+
+count$residuals
+shapiro.test(count$residuals)
+shapiro.test(residuals(count))
+shapiro.test(residuals.glm(count_log))
+shapiro.test(residuals.)
+shapiro.test(residuals.lm(count))
+count$coefficients
+ggplot(data = epilepsy) + 
+  geom_point(mapping = aes(x = 1:length(subject), 
+                           y = residuals.glm(count_log), 
+                           colour = 0)) + 
+  geom_hline(mapping = aes(yintercept = 0, colour = 1)) +
+  scale_colour_viridis_c(guide = FALSE) + 
+  xlab(label = "Index") + 
+  ylab(label = "Residuen")
+
+#### Simulation ####
+lambda <- rgamma(n = 10000, shape = 1, rate = 1)
+poisson <- c()
+for (i in 1:10000) {
+  poisson[i] <- rpois(n = 1, lambda = lambda[i])  
+}
+poisson
+ggplot() + 
+  geom_density(mapping = aes(x = poisson, fill = 1)) + 
+  scale_colour_viridis_d() + 
+  guides(fill = FALSE)
+
+ggplot() + 
+  geom_histogram(mapping = aes(x = poisson, fill = 1))
+
+ggplot() + 
+  geom_histogram(mapping = aes(x = poisson, y = ..density.., fill = 1), 
+                 bins = 10)
