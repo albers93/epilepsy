@@ -2,52 +2,51 @@
 # Packages
 library(MASS)
 library(tidyverse)
-library(gridExtra)
-library(epitools)
 library(GGally)
+library(lmtest)
 
 # Data
-epilepsy <- read.csv(file = "epilepsy.csv", sep = ";")
-epilepsy <- epilepsy %>% 
+epilepsy <- read.csv(file = "epilepsy.csv", sep = ";") %>% 
   rename(
     seizures_baseline = number.of.seizures.at.baseline, 
     seizures_treatment = number.of.seizures.under.treatment, 
-    time_study = time.in.study..days., 
-    dropout = drop.out, 
+    time_study = time.in.study..days.,
+    drop_out = drop.out,
     time_baseline = time.to.baseline.number
-) %>% 
+  ) %>% 
   mutate(
     treatment = factor(treatment, labels = c("placebo", "new")), 
-    dropout = as.factor(dropout), 
-    censor = as.factor(censor), 
-    response = as.factor(as.integer(
-      seizures_treatment <= seizures_baseline & dropout == 0)
-    ),
+    drop_out = factor(drop_out, labels = c("No", "Yes")), 
+    censor = factor(censor, labels = c("No", "Yes")), 
+    response = factor(if_else(
+      condition = seizures_treatment <= seizures_baseline & drop_out == "No", 
+      true = 1, 
+      false = 0
+    ), labels = c("No", "Yes")), 
     seizures_baseline_log = log(seizures_baseline), 
     time_study_log = log(time_study)
-)
+  )
 summary(object = epilepsy)
-ggpairs(data = epilepsy, mapping = aes(colour = 1),
-        upper = list(continuous = wrap(funcVal = "points"), 
-                     combo = wrap(funcVal = "box"), 
-                     discrete = wrap(funcVal = "facetbar")), 
-        lower = list(continuous = wrap(funcVal = "points"), 
-                     combo = wrap(funcVal = "box"), 
-                     discrete = wrap(funcVal = "facetbar")),
-        diag = list(continuous = wrap(funcVal = "densityDiag"), 
-                    discrete = wrap(funcVal = "barDiag")))
+
+# Visualization
+ggpairs(
+  data = epilepsy, 
+  mapping = aes(colour = 1), title = "Original data",
+  upper = list(continuous = "points", combo = "box", discrete = "facetbar"),
+  lower = list(continuous = "points", combo = "box", discrete = "facetbar")
+)
 
 #### Binary Regression ####
-ggpairs(data = epilepsy, mapping = aes(colour = 1), 
-        columns = c("response", "treatment", "seizures_baseline"),
-        upper = list(continuous = wrap(funcVal = "points"), 
-                     combo = wrap(funcVal = "box"), 
-                     discrete = wrap(funcVal = "facetbar")), 
-        lower = list(continuous = wrap(funcVal = "points"), 
-                     combo = wrap(funcVal = "box"), 
-                     discrete = wrap(funcVal = "facetbar")),
-        diag = list(continuous = wrap(funcVal = "densityDiag"), 
-                    discrete = wrap(funcVal = "barDiag")))
+# Visualization
+ggpairs(data = epilepsy, 
+        columns = c("response", "treatment", "seizures_baseline"), 
+        mapping = aes(colour = 1), title = "Binary Regression",
+        upper = list(continuous = "points",
+                     combo = "box",
+                     discrete = "facetbar"),
+        lower = list(continuous = "points",
+                     combo = "box",
+                     discrete = "facetbar"))
 
 # Chi-Quadrat Tests
 table(epilepsy$response, epilepsy$treatment, dnn = c("Response", "Treatment"))
@@ -73,6 +72,9 @@ summary(object = logit_log)
 AIC(logit, logit_log)
 AIC(logit_log) < AIC(logit)
 ### logit_log is the better model
+
+lrtest(logit, logit_log)
+### log transformation is significant
 
 ggplot(data = epilepsy) + 
   geom_point(mapping = aes(x = seizures_baseline_log, 
@@ -213,6 +215,9 @@ summary(object = count_log)
 AIC(count, count_log)
 AIC(count_log) < AIC(count)
 ### count_log is the better model
+
+lrtest(count, count_log)
+# significant difference
 
 anova(count, count_log)
 
