@@ -13,14 +13,14 @@ epilepsy <- read.csv(file = "data/epilepsy.csv", sep = ";") %>%
     time_baseline = time.to.baseline.number
   ) %>% 
   mutate(
-    treatment = factor(treatment, labels = c("placebo", "new")), 
-    drop_out = factor(drop_out, labels = c("No", "Yes")), 
-    censor = factor(censor, labels = c("No", "Yes")), 
-    response = factor(if_else(
-      condition = seizures_treatment <= seizures_baseline & drop_out == "No", 
+    treatment = as.factor(treatment), 
+    drop_out = as.factor(drop_out), 
+    censor = as.factor(if_else(condition = censor == 0, true = 1, false = 0)), 
+    response = as.factor(if_else(
+      condition = seizures_treatment <= seizures_baseline & drop_out == 0, 
       true = 1, 
       false = 0
-    ), labels = c("No", "Yes")), 
+    )), 
     seizures_baseline_log = log(seizures_baseline), 
     time_study_log = log(time_study)
   )
