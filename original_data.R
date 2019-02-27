@@ -4,7 +4,7 @@ library(tidyverse)
 library(GGally)
 
 # Data
-epilepsy <- read.csv(file = "data/epilepsy.csv", sep = ";") %>% 
+epilepsy <- read.csv(file = "epilepsy.csv", sep = ";") %>% 
   rename(
     seizures_baseline = number.of.seizures.at.baseline, 
     seizures_treatment = number.of.seizures.under.treatment, 
